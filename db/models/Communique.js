@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const db = require('../_db');
-// const fillInCommDetails = require('../../scrape_article');
 
 module.exports = db.define('communique', {
 	title: {
@@ -70,7 +69,6 @@ module.exports = db.define('communique', {
 			instances.forEach(function(instance) {
 		      const fullUrl = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393' + instance.url.slice(1);
 		      instance.url = fullUrl;
-		      // fillInCommDetails(instance.url);
 			});
 	    },
 	    afterUpdate: function(instance) {
