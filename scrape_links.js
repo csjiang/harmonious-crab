@@ -5,14 +5,16 @@ const horseman = new Horseman({
 	//I've had to set really long timeouts because I'm testing while on vacation in China... 
 });
 
-const Communique = require('./db').Communique;
+const db = require('./db');
+const Communique = require('./db/models').Communique;
 
 let allLinks = [];
 
 function getLinks(){
 	console.log('getting links!');
 	return horseman.evaluate(function(){
-		let someNewLinks = [];
+		//don't use ES6 here! 'let' breaks evaluate! 
+		var someNewLinks = [];
 		$("body > div.container.clearfix > div.main.fl > div.newsLst_mod > ul > li > a").each(function( item ){
 			const link = {
 				title : $(this).text(),
@@ -63,16 +65,16 @@ horseman
   .open('http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393/')
   .waitForSelector('body > div.container.clearfix > div.main.fl > div.newsLst_mod')
   .then( scrape )
-  .then(function() {
-  	return Communique.bulkCreate(allLinks)
-  	.then(function(createdInstances) {
-  		console.log('These instances were created!');
-  		console.log(createdInstances);
-  	})
-  	.catch(console.error);
-  })
   .finally(function(){
-  	console.log(`Total links: ${allLinks.length}`);
+  	console.log(allLinks);
+	console.log(allLinks.length);
 	
+	Communique.bulkCreate(allLinks, {returning: true})
+	.then(function(createdComms) {
+		console.log('comms successfully created!');
+		console.log(createdComms);
+	})
+	.catch(console.error);
+
 	horseman.close();
 	});

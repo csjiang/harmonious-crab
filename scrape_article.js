@@ -1,49 +1,49 @@
 const Horseman = require('node-horseman');
 const horseman = new Horseman({
 	loadImages: false,
-	timeout: 20000, 
-	//I've had to set really long timeouts because I'm testing while on vacation in China... 
+	timeout: 10000, 
 });
+// for testing 
+// const url = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393/t1418254.shtml';
 
-const Communique = require('./db').Communique;
+const Communique = require('./db/models').Communique;
 
-const scrapeCommuniqueInstance(){
-	console.log('scraping Communique instance!');
-	return horseman.evaluate(function(){
-		let theCommunique = {};
-		theCommunique.date = $("#News_Body_Time").text();
-		theCommunique.content = $("body > div.container.clearfix > div > div.content_mod > div.content").text();
-		console.log(theCommunique);
-		return theCommunique;
-	});
-};
+let scrapedCommunique = {};
 
-const scrapeAndSave(){
-	console.log('scraping and saving Communique!');
-	
+function addContent(url){
+	console.log('scraping Communique!');	
 	return new Promise( function( resolve, reject ){
-		return scrapeCommuniqueInstance()
-		.then(function(scrapedCommunique){
-			return Communique.find({
-				where: { url }
-			})
-			.then(foundCommunique => foundCommunique.update(scrapedCommunique))
-			.then(updatedCommunique => {
-				console.log('Communique record updated!', updatedCommunique);
-			})
-			.catch(console.error);
+		return Communique.find({
+			where: { url }
+		})
+		.then(foundCommunique => {
+			return foundCommunique.update(scrapedCommunique);
+		})
+		.then(updatedCommunique => {
+			console.log(updatedCommunique);
 		})
 		.then( resolve );
 	});
+};
 
-module.exports = function scrapeCommunique(url) {
+module.exports = function(url) {
 	horseman
 	  .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
 	  .open(url)
-	  .waitForSelector('body > div.container.clearfix > div > div.content_mod')
-	  .then( scrapeAndSave )
+	  .waitForSelector('body > div.container.clearfix > div > div.content_mod > div.content')
+	  .text('#News_Body_Time')
+	  .then(function(text) {
+	  	scrapedCommunique.date = text;
+	  })
+	  .text('body > div.container.clearfix > div > div.content_mod > div.content')
+	  .then(function(text) {
+	  	scrapedCommunique.content = text;
+	  })
 	  .finally(function(){
-	  	console.log('successfully updated!');
-		horseman.close();
+	  	addContent(url)
+	  	.then(function() {
+		  	console.log('Successfully updated!');
+			horseman.close();
+	  	})
 	});
 };

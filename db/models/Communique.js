@@ -1,23 +1,25 @@
 const Sequelize = require('sequelize');
 const db = require('../_db');
-const fillInCommDetails = require('../../scrape_article');
+// const fillInCommDetails = require('../../scrape_article');
 
 module.exports = db.define('communique', {
 	title: {
-	  	type: Sequelize.STRING,
+	  	type: Sequelize.TEXT, //Some titles are pretty long
 	  	allowNull: false,
 	},
 	date: {
 		type: Sequelize.DATEONLY,
-		defaultValue: '',
 	},
 	content: {
 		type: Sequelize.TEXT,
 		defaultValue: '',
 	},
 	url: {
-		type: Sequelize.URL,
+		type: Sequelize.TEXT, 
 		allowNull: false,
+		validate: {
+			isUrl: true, 
+		},
 	}
 }, {
 	// getterMethods: {},
@@ -64,11 +66,16 @@ module.exports = db.define('communique', {
 		}
 	},
 	hooks: {
-		beforeCreate: function(instance) {
-	      var date = instance.date.replace("/", "-");
-	      instance.date = date;
-	      console.log('date updated!');
-	      fillInCommDetails(instance.url);
-	    }
+		beforeBulkCreate: function (instances, options) {
+			instances.forEach(function(instance) {
+		      const fullUrl = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393' + instance.url.slice(1);
+		      instance.url = fullUrl;
+		      // fillInCommDetails(instance.url);
+			});
+	    },
+	    afterUpdate: function(instance) {
+	    	const date = instance.date.replace("/", "-");
+		    instance.date = date;
+	    },
 	},
 });
