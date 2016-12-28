@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../_db');
+const fillInCommDetails = require('../../scrape_article');
 
 module.exports = db.define('communique', {
 	title: {
@@ -8,12 +9,16 @@ module.exports = db.define('communique', {
 	},
 	date: {
 		type: Sequelize.DATEONLY,
-		allowNull: false,
+		defaultValue: '',
 	},
 	content: {
 		type: Sequelize.TEXT,
-		allowNull: false,
+		defaultValue: '',
 	},
+	url: {
+		type: Sequelize.URL,
+		allowNull: false,
+	}
 }, {
 	// getterMethods: {},
 	// instanceMethods: {},
@@ -59,9 +64,11 @@ module.exports = db.define('communique', {
 		}
 	},
 	hooks: {
-		beforeCreate: function(article, options) {
-	      var date = article.date.replace("/", "-");
-	      article.date = date;
+		beforeCreate: function(instance) {
+	      var date = instance.date.replace("/", "-");
+	      instance.date = date;
+	      console.log('date updated!');
+	      fillInCommDetails(instance.url);
 	    }
 	},
 });
