@@ -6,6 +6,10 @@ module.exports = db.define('communique', {
 	  	type: Sequelize.TEXT, //Some titles are pretty long
 	  	allowNull: false,
 	},
+	language: {
+		type: Sequelize.ENUM('English', '中文'),
+		allowNull: false,
+	},
 	date: {
 		type: Sequelize.DATEONLY,
 	},
@@ -67,12 +71,15 @@ module.exports = db.define('communique', {
 	hooks: {
 		beforeBulkCreate: function (instances, options) {
 			instances.forEach(function(instance) {
-		      const fullUrl = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393' + instance.url.slice(1);
-		      instance.url = fullUrl;
+				let fullUrl;
+				instance.language === 'English' 
+				? fullUrl = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393' + instance.url.slice(1)
+				: fullUrl = 'http://www.fmprc.gov.cn/web/ziliao_674904/1179_674909/' + instance.url.slice(1);
+		      	instance.url = fullUrl;
 			});
 	    },
 	    afterUpdate: function(instance) {
-	    	const date = instance.date.replace("/", "-");
+	    	const date = instance.date.replace(/\//g, '-');
 		    instance.date = date;
 	    },
 	},
