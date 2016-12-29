@@ -5,8 +5,8 @@ const horseman = new Horseman({
 	//I've had to set really long timeouts because I'm testing while on vacation in China... 
 });
 
-const db = require('./db');
-const Communique = require('./db/models').Communique;
+const db = require('../db');
+const Communique = require('../db/models').Communique;
 
 let allLinks = [];
 
@@ -18,7 +18,8 @@ function getLinks(){
 		$("body > div.container.clearfix > div.main.fl > div.newsLst_mod > ul > li > a").each(function( item ){
 			const link = {
 				title : $(this).text(),
-				url : $(this).attr("href")
+				url : $(this).attr("href"),
+				language: 'English',
 			};
 			someNewLinks.push(link);
 		});
