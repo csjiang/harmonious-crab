@@ -13,7 +13,6 @@ const horseman = new Horseman({
 function getLinks( linkSelector, language ){
 	console.log('Getting links!');
 	return horseman.evaluate(function( linkSelector, language ){
-		//don't use ES6 here! 'let' breaks 'evaluate'! 
 		var someNewLinks = [];
 		$( linkSelector ).each(function( item ){
 			const link = {
@@ -30,7 +29,7 @@ function getLinks( linkSelector, language ){
 function hasNextPage( nextSelector ){
 	return new Promise( function( resolve, reject ){
 		return horseman.evaluate(function( nextSelector ) {
-			return $( nextSelector ).length;
+			return jQuery( nextSelector ).length;
 		})
 		.then(function(hasNext) {
 			resolve(hasNext);
@@ -51,8 +50,8 @@ function scrape( linkSelector, language, nextSelector, selectorToClick ){
 				if (hasNext){
 					return horseman
 						.click( selectorToClick ) 
-						.wait(5000)
-						.then( scrape ( linkSelector, 
+						.wait(10000)
+						.then(() => scrape ( linkSelector, 
 							language,
 							nextSelector, 
 							selectorToClick 
@@ -70,7 +69,7 @@ module.exports = function(url, selectorToAwait, linkSelector, language, nextSele
 	  	.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
 	  	.open(url) 
 	  	.waitForSelector(selectorToAwait) 
-	  	.then( scrape ( linkSelector, language, nextSelector, selectorToClick ))
+	  	.then(() => scrape ( linkSelector, language, nextSelector, selectorToClick ))
 	  	.finally(function(){
 			console.log(allLinks);
 			console.log(allLinks.length);
@@ -83,5 +82,6 @@ module.exports = function(url, selectorToAwait, linkSelector, language, nextSele
 			.catch(console.error);
 
 			horseman.close();
-	  	});
+	  	})
+	  	.catch(console.error);
 }
