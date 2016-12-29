@@ -52,7 +52,7 @@ module.exports = function(url, selectorToAwait, linkSelector, language, nextSele
 					if (hasNext){
 						return horseman
 							.click( selectorToClick ) 
-							.wait(10000)
+							.waitForNextPage()
 							.then(scrape);
 					} 
 				});

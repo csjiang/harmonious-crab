@@ -52,7 +52,7 @@ function scrape(){
 				if (hasNext){
 					return horseman
 						.click("#pages > a:nth-last-of-type(2)")
-						.wait(10000)
+						.waitForNextPage()
 						.then( scrape );
 				} 
 			});
