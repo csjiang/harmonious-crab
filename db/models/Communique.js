@@ -20,27 +20,24 @@ module.exports = db.define('communique', {
 	url: {
 		type: Sequelize.TEXT, 
 		allowNull: false,
-		validate: {
-			isUrl: true, 
-		},
 	}
 }, {
 	// getterMethods: {},
 	// instanceMethods: {},
 	classMethods:{
 		//in-progress
-		// findByDate: function (date) {
-		// 	return this.findAll({
-		// 		where: {
-		// 			date: {
+		findByDate: function (date) {
+			return this.findAll({
+				where: {
+					date: {
 						
-		// 			}
-		// 		}
-		// 	})
-		// 	.then(function (foundByDate) {
-		// 		return foundByDate;
-		// 	})
-		// },
+					}
+				}
+			})
+			.then(function (foundByDate) {
+				return foundByDate;
+			})
+		},
 
 		findByTitle: function(keyword) {
 			return this.findAll({
@@ -74,13 +71,15 @@ module.exports = db.define('communique', {
 				let fullUrl;
 				instance.language === 'English' 
 				? fullUrl = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393' + instance.url.slice(1)
-				: fullUrl = 'http://www.fmprc.gov.cn/web/ziliao_674904/1179_674909/' + instance.url.slice(1);
+				: fullUrl = 'http://www.fmprc.gov.cn/web/ziliao_674904/1179_674909' + instance.url.slice(1);
 		      	instance.url = fullUrl;
 			});
 	    },
 	    afterUpdate: function(instance) {
-	    	const date = instance.date.replace(/\//g, '-');
-		    instance.date = date;
+	    	if (instance.date && instance.date.includes('/')) {
+		    	const date = instance.date.replace(/\//g, '-');
+			    instance.date = date;
+	    	}
 	    },
 	},
 });
