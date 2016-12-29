@@ -2,7 +2,7 @@ const Horseman = require('node-horseman');
 // for testing 
 // const url = 'http://www.fmprc.gov.cn/mfa_eng/wjdt_665385/2649_665393/t1418254.shtml';
 
-const Communique = require('./db/models').Communique;
+const Communique = require('../db/models').Communique;
 
 let scrapedCommunique = {};
 

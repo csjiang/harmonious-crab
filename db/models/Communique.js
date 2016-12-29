@@ -6,6 +6,10 @@ module.exports = db.define('communique', {
 	  	type: Sequelize.TEXT, //Some titles are pretty long
 	  	allowNull: false,
 	},
+	language: {
+		type: Sequelize.ENUM('English', '中文'),
+		allowNull: false,
+	},
 	date: {
 		type: Sequelize.DATEONLY,
 	},
