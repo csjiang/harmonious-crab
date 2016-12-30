@@ -4,7 +4,10 @@ const Communique = require('../db/models').Communique;
 
 Communique.findAll({
 	where: {
-		content: ''
+		content: '',
+		url: {
+			$notLike: '%.pdf' 
+		},
 	}
 })
 .then(results => {
@@ -16,26 +19,51 @@ Communique.findAll({
 		timeout: 10000, 
 	});
 
+	// The following event listeners enable the process to restart when the scraper crashes. Hooray for automation!
 
-	// Restarts when the scraper crashes, which is quite often. Hooray for automation!
-
-	// This one handles SequelizeBaseErrors. 
-	horseman.onError = function(message, trace) {
-		console.log(message);
+	// handles SequelizeBaseErrors, evaluation errors, etc 
+	horseman.on('error', function(message, trace) {
+		console.log('A wild error appeared! ' + message);
 		console.log(trace);
 		return horseman
 		  .open(current.url)
 		  .waitForSelector('#News_Body_Title')
 		  .then(scrape);
-	};
+	});
 
-	horseman.onResourceError = function(resourceError) {
-		console.log(resourceError);
+	// handles resource timeouts
+	horseman.on('timeout', function(msg) {
+		console.log('Timeout ... oops...')
 		return horseman
 		  .open(current.url)
 		  .waitForSelector('#News_Body_Title')
 		  .then(scrape);
-	};
+	});
+
+	// handles failed GET requests
+	horseman.on('resourceReceived', function(response) {
+		// console.log(response);
+		// console.log(response.status);
+		console.log('Resource received!');
+		if (response.status !== 200) {
+			return horseman
+			  .open(current.url)
+			  .waitForSelector('#News_Body_Title')
+			  .then(scrape);
+		}
+	});
+
+	// handles URL load failures (?)
+	horseman.on('loadFinished', function(status) {
+		console.log('loadFinished');
+		console.log(status);
+		if (status !== 'success') {
+			return horseman
+			  .open(current.url)
+			  .waitForSelector('#News_Body_Title')
+			  .then(scrape);
+		}
+	});
 
 	function getLinksEnglish(){
 	  return horseman.evaluate( function(){
@@ -103,9 +131,6 @@ Communique.findAll({
 		console.log('All updates completed!');
 		horseman.close();
 		return toUpdateResults;
-	})
-	.catch(console.error);
+	}); 
 })
-.then(results => console.log(results))
-.catch(console.error);
-
+.then(results => console.log(results)); //I haven't attached error catchers to my promise chains here because I want the process to restart itself on error instead of exiting. 
