@@ -25,48 +25,41 @@ Communique.findAll({
 	horseman.on('error', function(message, trace) {
 		console.log('A wild error appeared! ' + message);
 		console.log(trace);
-		return horseman
-		  .open(current.url)
-		  .waitForSelector('#News_Body_Title')
-		  .then(scrape);
+		return retry();
 	});
 
 	// handles resource timeouts
 	horseman.on('timeout', function(msg) {
 		console.log('Timeout ... oops...')
-		return horseman
-		  .open(current.url)
-		  .waitForSelector('#News_Body_Title')
-		  .then(scrape);
+		return retry();
 	});
 
 	// handles failed GET requests
 	horseman.on('resourceReceived', function(response) {
-		// console.log(response);
-		// console.log(response.status);
-		console.log('Resource received!');
+		console.log('Resource received with status code ' + response.status, response.statusText);
 		if (response.status !== 200) {
-			return horseman
-			  .open(current.url)
-			  .waitForSelector('#News_Body_Title')
-			  .then(scrape);
+			console.log(response);
+			return retry();
 		}
 	});
 
-	// handles URL load failures (?)
+	// handles URL load failures
 	horseman.on('loadFinished', function(status) {
-		console.log('loadFinished');
-		console.log(status);
-		if (status !== 'success') {
-			return horseman
-			  .open(current.url)
-			  .waitForSelector('#News_Body_Title')
-			  .then(scrape);
-		}
+		console.log('Page load finished with status ' + status);
+		if (status !== 'success') return retry();
 	});
 
-	function getLinksEnglish(){
-	  return horseman.evaluate( function(){
+	// prevents loading of parser-blocking scripts 
+	// doesn't work: https://github.com/baudehlo/node-phantom-simple/issues/98
+	// horseman.onResourceRequested = function(requestData, networkRequest) {
+	// 	console.log('resource requested ' + requestData.url);
+		// console.log(requestData.headers);
+		// if (requestData.url.includes('jiathis') || requestData.url.includes('recv1.conac')) {
+		// 	networkRequest.abort();
+	// };
+
+	function getLinksEnglish() {
+	  return horseman.evaluate(function() {
 		var toUpdate = {};
 		if ($('#News_Body_Time').text().length > 0) toUpdate.date = $('#News_Body_Time').text();
 		toUpdate.content = $('body > div.container.clearfix > div > div.content_mod > div.content').text();
@@ -74,8 +67,8 @@ Communique.findAll({
 	  });
 	};
 
-	function getLinksChinese(){
-		return horseman.evaluate( function(){
+	function getLinksChinese() {
+		return horseman.evaluate(function() {
 			var toUpdate = {};
 			if ($('#News_Body_Time').text().length > 0) toUpdate.date = $('#News_Body_Time').text();
 			toUpdate.content = $('#News_Body_Txt_A').text();
@@ -91,33 +84,39 @@ Communique.findAll({
 
 	function newCurrent() {
 		current = queue.pop();
-		console.log('New current! ' + current.title);
+		console.log('Currently scraping: ' + current.title);
 	};
 
-	function scrape(){
+	function retry() {
+		return horseman
+		    .open(current.url)
+		    .waitForSelector('#News_Body_Title')
+		    .then(scrape)
+		    .catch(retry);
+	};
 
-	  return new Promise( function( resolve, reject ) {
+	function scrape() {
+		// Recursively scrapes and updates entries as long as there are items in the queue
 
-	  	getLinks()
-		.then(function(toUpdate){
-			Communique.findById(current.id)
-			.then(foundCommunique => {
-				return foundCommunique.update(toUpdate);
+	    return new Promise(function(resolve, reject) {
+
+		  	getLinks()
+			.then(function(toUpdate) {
+				Communique.findById(current.id)
+				.then(foundCommunique => {
+					return foundCommunique.update(toUpdate);
+				})
+				.then(updatedCommunique => {
+					console.log('Successfully updated entry from ' + updatedCommunique.date);
+				});
+
+			  	if (queue.length > 0) {
+					newCurrent();
+					return retry();
+			  	}
 			})
-			.then(updatedCommunique => {
-				console.log('Successfully updated: ' + updatedCommunique.date);
-			})
-
-		  	if (queue.length > 0) {
-				newCurrent();
-				return horseman
-				  .open(current.url)
-				  .waitForSelector('#News_Body_Title')
-				  .then(scrape);
-		  	}
-		})
-		.then( resolve );
-	  });
+			.then(resolve);
+	    });
 	};
 
 	newCurrent();
@@ -130,7 +129,7 @@ Communique.findAll({
 	.then(function() {
 		console.log('All updates completed!');
 		horseman.close();
-		return toUpdateResults;
-	}); 
+	})
+	.catch(retry);
 })
-.then(results => console.log(results)); //I haven't attached error catchers to my promise chains here because I want the process to restart itself on error instead of exiting. 
+.then(results => console.log(results)); 
