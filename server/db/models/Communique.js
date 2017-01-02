@@ -63,6 +63,15 @@ module.exports = db.define('communique', {
 			.then(function (foundByContent) {
 				return foundByContent;
 			})
+		},
+
+		findByLanguage: function(language) {
+			return this.findAll({
+				where: { language }
+			})
+			.then(function (foundByLanguage) {
+				return foundByLanguage;
+			})
 		}
 	},
 	hooks: {

@@ -1,3 +1,4 @@
 node_modules
 todos
 db/config.js
+public/bundle.*

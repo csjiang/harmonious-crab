@@ -1,6 +1,6 @@
 const Horseman = require('node-horseman');
 const _ = require('lodash');
-const Communique = require('../db/models').Communique;
+const Communique = require('../server/db/models').Communique;
 
 Communique.findAll({
 	where: {

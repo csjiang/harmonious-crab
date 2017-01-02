@@ -5,8 +5,8 @@ const horseman = new Horseman({
 	//I've had to set really long timeouts because I'm testing while on vacation in China... 
 });
 
-const db = require('../db');
-const Communique = require('../db/models').Communique;
+const db = require('../server/db');
+const Communique = require('../server/db/models').Communique;
 
 let allLinks = [];
 

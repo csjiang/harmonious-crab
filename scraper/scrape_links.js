@@ -1,6 +1,6 @@
 const Horseman = require('node-horseman');
-const db = require('../db');
-const Communique = require('../db/models').Communique;
+const db = require('../server/db');
+const Communique = require('../server/db/models').Communique;
 
 let allLinks = [];
 

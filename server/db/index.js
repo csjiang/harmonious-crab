@@ -6,7 +6,7 @@ require('./models');
 // module.exports = db; 
 
 
-var syncedDbPromise = db.sync({ force: true });
+var syncedDbPromise = db.sync();
 
 syncedDbPromise.then(function () {
   console.log('Sequelize models synced to PostgreSQL');
