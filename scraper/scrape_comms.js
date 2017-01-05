@@ -84,7 +84,7 @@ Communique.findAll({
 
 	function newCurrent() {
 		current = queue.pop();
-		console.log('Currently scraping: ' + current.title);
+		console.log('Currently scraping: ' + current.title + ' at ' + current.url);
 	};
 
 	function retry() {
@@ -92,12 +92,20 @@ Communique.findAll({
 		    .open(current.url)
 		    .waitForSelector('#News_Body_Title')
 		    .then(scrape)
+		    .catch(retryWithDiffSelector);
+	};
+
+	function retryWithDiffSelector() {
+		//Some of the older entries are missing the #News_Body_Title element. 
+		return horseman
+		    .open(current.url)
+		    .waitForSelector('#News_Body_Time')
+		    .then(scrape)
 		    .catch(retry);
 	};
 
 	function scrape() {
 		// Recursively scrapes and updates entries as long as there are items in the queue
-
 	    return new Promise(function(resolve, reject) {
 
 		  	getLinks()
@@ -122,14 +130,14 @@ Communique.findAll({
 	newCurrent();
 
 	return horseman
-	.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
-	.open(current.url)
-	.waitForSelector('#News_Body_Title')
-	.then(scrape)
-	.then(function() {
-		console.log('All updates completed!');
-		horseman.close();
-	})
-	.catch(retry);
+		.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+		.open(current.url)
+		.waitForSelector('#News_Body_Title')
+		.then(scrape)
+		.then(function() {
+			console.log('All updates completed!');
+			horseman.close();
+		})
+		.catch(retry);
 })
 .then(results => console.log(results)); 
