@@ -29,6 +29,7 @@
     "node-horseman": "^3.2.0",
     "nodemon": "^1.11.0",
     "osmosis": "^1.1.2",
+    "pg": "^6.1.2",
     "react": "^15.4.1",
     "react-addons-css-transition-group": "^15.4.1",
     "react-addons-transition-group": "^15.4.1",
