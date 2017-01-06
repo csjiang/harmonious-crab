@@ -1,5 +1,6 @@
 const initialState = {
   communique: [],
+  allCommunique: [],
   selectedCommunique: {},
   titleKeywords: '',
   contentKeywords: '',

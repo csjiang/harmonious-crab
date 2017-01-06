@@ -9,7 +9,7 @@ const Communique = models.Communique;
 module.exports = router;
 
 router.get('/', function(req, res, next) {
-	Communique.findAll({})
+	Communique.findAll()
 	.then(communiques => res.json(communiques))
 	.catch(next);
 });
@@ -32,12 +32,6 @@ router.param('communiqueId', (req, res, next, id) => {
 router.get('/:communiqueId', (req, res) => {
   res.json(req.communique);
 });
-
-// router.get('/:communiqueId/waka_matches', (req, res, next) => {
-//   Waka.findByToken(req.kigo.name)
-//   .then(wakas => res.json(wakas))
-//   .catch(next);
-// });
 
 router.get('/searchByTitle/:titleKeywords', (req, res, next) => {
   Communique.findByTitle(req.params.titleKeywords)

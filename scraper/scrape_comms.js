@@ -61,7 +61,13 @@ Communique.findAll({
 	function getLinksEnglish() {
 	  return horseman.evaluate(function() {
 		var toUpdate = {};
-		if ($('#News_Body_Time').text().length > 0) toUpdate.date = $('#News_Body_Time').text();
+		if ($('#News_Body_Time').text().length > 0) {
+			toUpdate.date = $('#News_Body_Time').text();
+		} else if ($('#News_Body_subitle').text().length > 0) {
+			var date = $('#News_Body_subitle').text().replace(/[a-zA-Z]+,/, '');
+			var mscDate = new Date(Date.parse(date));
+			toUpdate.date = mscDate.toISOString().split('T')[0];
+		}
 		toUpdate.content = $('body > div.container.clearfix > div > div.content_mod > div.content').text();
 		return toUpdate;
 	  });
@@ -132,7 +138,8 @@ Communique.findAll({
 	return horseman
 		.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
 		.open(current.url)
-		.waitForSelector('#News_Body_Title')
+		.waitForSelector('#News_Body_Time')
+		// .waitForSelector('#News_Body_Title')
 		.then(scrape)
 		.then(function() {
 			console.log('All updates completed!');

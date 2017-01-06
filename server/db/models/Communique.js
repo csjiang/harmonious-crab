@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../_db');
+const moment = require('moment');
 
 module.exports = db.define('communique', {
 	title: {
@@ -12,6 +13,9 @@ module.exports = db.define('communique', {
 	},
 	date: {
 		type: Sequelize.DATEONLY,
+		get: function() {
+        	return moment.utc(this.getDataValue('date')).format('YYYY-MM-DD');
+      	}
 	},
 	content: {
 		type: Sequelize.TEXT,
@@ -22,7 +26,11 @@ module.exports = db.define('communique', {
 		allowNull: false,
 	}
 }, {
-	// getterMethods: {},
+	getterMethods: {
+		snippet: function() {
+			return this.content.trim().slice(0, 200) + '...'
+		}
+	},
 	// instanceMethods: {},
 	classMethods:{
 		//in-progress

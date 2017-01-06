@@ -3,7 +3,7 @@ import axios from 'axios';
 import { hashHistory } from 'react-router';
 
 import initialState from '../initialState';
-import Navbar from '../components/Navbar';
+import MyNavbar from '../components/Navbar';
 import Communique from '../components/Communique';
 import NotFound from '../components/NotFound';
 
@@ -15,15 +15,16 @@ export default class AppContainer extends Component {
 
     this.selectCommunique = this.selectCommunique.bind(this);
     // this.selectByDate = this.selectByDate.bind(this);
-    // this.filterLanguage = this.filterLanguage.bind(this);
+    this.filterLanguage = this.filterLanguage.bind(this);
     this.searchByContent = this.searchByContent.bind(this);
     this.searchByTitle = this.searchByTitle.bind(this);
+    this.updateCommunique = this.updateCommunique.bind(this);
   }
 
   componentDidMount () {
     axios.get('/api/communique/')
-    .then(res => res.map(r => r.data))
-    .then(data => this.onLoad(...data));
+    .then(res => res.data)
+    .then(data => this.onLoad(data));
   }
 
   // shouldComponentUpdate (nextProps, nextState) {
@@ -31,7 +32,7 @@ export default class AppContainer extends Component {
   // }
 
   onLoad (communique) {
-    this.setState({ communique });
+    this.setState({ communique, allCommunique: communique });
   }
 
   selectCommunique (communiqueId) {
@@ -59,39 +60,42 @@ export default class AppContainer extends Component {
     .catch(error => this.setState({ invalid: true }));  
   }
 
-  // filterLanguage (wakaId){
+  filterLanguage (language) {
+    const filtered = this.state.allCommunique.filter(communique => {
+      return communique.language === language
+    });
+    this.setState({
+      communique: filtered,
+      language
+    });
+  }
 
-  // }
+  updateCommunique(updateEvent) {
+    console.log(updateEvent);
+  }
 
   render () {
     const props = Object.assign({}, this.state, {
       selectCommunique: this.selectCommunique,
       searchByContent: this.searchByContent,
       searchByTitle: this.searchByTitle,
+      updateCommunique: this.updateCommunique,
     });
 
     if (this.state.invalid) {
       return (
         <div id="main" className="container-fluid">
-          <div className="col-xs-3">
-            <Navbar />
-          </div>
-          <div className="col-xs-9">
+          <MyNavbar />
           <NotFound />
-          </div>
         </div>
         )
     } else 
     return (
       <div id="main" className="container-fluid">
-        <div className="col-xs-3">
-          <Navbar searchByContent={this.searchByContent} searchByTitle={this.searchByTitle} />
-        </div>
-        <div className="col-xs-9">
+        <MyNavbar filterLanguage={this.filterLanguage}/>
         {
           this.props.children && React.cloneElement(this.props.children, props)
         }
-        </div>
       </div>
     );
   }
