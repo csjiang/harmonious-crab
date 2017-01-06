@@ -3,3 +3,4 @@ todos
 db/config.js
 public/bundle.*
 Procfile
+mofa.dump
